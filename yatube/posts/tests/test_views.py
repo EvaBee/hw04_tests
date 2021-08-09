@@ -81,12 +81,13 @@ class PostViewTests(TestCase):
         self.assertEqual(response.context["post"], self.post)
 
     def test_first_page_contains_ten_records(self):
-        for _ in range(12):
+        cache.clear()
+        for _ in range(13):
             Post.objects.create(text="Тестовый текст", author=self.user)
         response = self.guest_client.get(reverse("index"))
         self.assertEqual(len(response.context.get("page").object_list), 10)
         response = self.guest_client.get(reverse("index") + "?page=2")
-        self.assertEqual(len(response.context.get("page").object_list), 3)
+        self.assertEqual(len(response.context.get("page").object_list), 4)
 
 
 class PaginatorViewsTest(TestCase):
