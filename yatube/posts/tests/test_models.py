@@ -7,9 +7,9 @@ class PostModelTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        author = User.objects.create_user(username='TEST_USR')
+        author = User.objects.create_user(username="TEST_USR")
         cls.Post = Post.objects.create(
-            text="тестовыйпостна15",
+            text="тестовыйпостна1",
             author=author,
         )
         cls.Group = Group.objects.create(
@@ -24,4 +24,4 @@ class PostModelTest(TestCase):
     def test_object_name_title_have_15_symbols(self):
         post = PostModelTest.Post
         expected_object_name = post.text[:15]
-        self.assertNotEqual(expected_object_name, str(post.text))
+        self.assertEqual(expected_object_name, str(post.text))
