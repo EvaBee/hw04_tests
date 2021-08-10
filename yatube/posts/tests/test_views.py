@@ -25,10 +25,10 @@ class PostViewTests(TestCase):
     def test_views_templates(self):
         cache.clear()
         templates_pages = {
-            'index.html': reverse('index'),
-            'posts/create_or_update_post.html': reverse('new_post'),
-            'posts/group.html': (
-                reverse('group_posts', kwargs={'slug': 'test-slug'})
+            "index.html": reverse("index"),
+            "posts/create_or_update_post.html": reverse("new_post"),
+            "posts/group.html": (
+                reverse("group_posts", kwargs={"slug": "test-slug"})
             ),
         }
         for template, reverse_name in templates_pages.items():
@@ -95,10 +95,32 @@ class PaginatorViewsTest(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.group = Group.objects.create(
-            title='testGroup',
-            slug='test-slug2',
+            title="testGroup",
+            slug="test-slug2",
         )
-        cls.author = User.objects.create_user(username='TEST_USR')
+        cls.author = User.objects.create_user(username="TEST_USR")
         for _ in range(13):
             Post.objects.create(
-                text='TestText', author=cls.author, group=cls.group,)
+                text="TestText", author=cls.author, group=cls.group,)
+
+    def setUp(self):
+        self.client = Client()
+
+    def test_first_page_contains_ten_records(self):
+        cache.clear()
+        response = self.client.get(reverse("index"))
+        self.assertEqual(len(response.context.get("page").object_list), 10)
+
+    def test_second_page_contains_three_records(self):
+        response = self.client.get(reverse("index") + "?page=2")
+        self.assertEqual(len(response.context.get("page").object_list), 3)
+
+    def test_group_contains_ten_records(self):
+        response = self.client.get(
+            reverse("group_posts", kwargs={"slug": "test-slug2"}))
+        self.assertEqual(len(response.context.get("page").object_list), 10)
+
+    def test_profile_contains_ten_records(self):
+        response = self.client.get(
+            reverse("profile", kwargs={"username": f"{self.author}"}))
+        self.assertEqual(len(response.context.get("page").object_list), 10)

@@ -10,7 +10,7 @@ from .models import Group, Post, User
 
 @cache_page(60 * 20)
 def index(request):
-    post_list = Post.objects.all()
+    post_list = Post.objects.all().order_by("-pub_date")
     paginator = Paginator(post_list, settings.PAGINATOR)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
@@ -23,7 +23,7 @@ def index(request):
 
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
-    posts = group.posts.all()
+    posts = group.posts.all().order_by("-pub_date")
     paginator = Paginator(posts, settings.PAGINATOR)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
@@ -35,7 +35,7 @@ def group_posts(request, slug):
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
-    author_posts_list = author.posts.all()
+    author_posts_list = author.posts.all().order_by("-pub_date")
     paginator = Paginator(author_posts_list, settings.PAGINATOR)
     page_number = request.GET.get("page")
     page = paginator.get_page(page_number)
