@@ -18,7 +18,7 @@ ALLOWED_HOSTS = [
 
 INSTALLED_APPS = [
     "posts",
-    "users",
+    "users.apps.UsersConfig",
     "about",
     "django.contrib.admin",
     "django.contrib.auth",
