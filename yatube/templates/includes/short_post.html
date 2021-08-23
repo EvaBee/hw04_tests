@@ -4,17 +4,17 @@
         <p class="card-text">
             {# Обязательно для всех ссылок используем {% url %} #}
             {# Тут делаем ссылку из name урла и передаем необходимый параметр в данном случае username #}
-            <a href="{% url 'profile' username=author.username %}"><strong class="d-block text-gray-dark">@{{ author.username }}</strong></a>
+            <a href="{% url 'profile' username=author.username %}"><strong class="d-block text-gray-dark">@{{ post.author.username }}</strong></a>
             {# Не забываем про linebreaksbr #}
             {{ post.text|linebreaksbr }}
         </p>
         {% include "includes/short_pictures.html" %}
         <div class="d-flex justify-content-between align-items-center">
             <div class="btn-group ">
-                 <a class="btn btn-sm text-muted" href="{% url 'post' username=author.username post_id=post.id %}" role="button">Добавить комментарий</a>
+                 <a class="btn btn-sm text-muted" href="{% url 'post' post_id=post.id %}" role="button">Добавить комментарий</a>
                 {# Объекты пользователей нужно сравнивать напрямую #}
-                {% if author == request.user %}
-                <a class="btn btn-sm text-muted" href="{% url 'post_edit' username=author.username post_id=post.id %}" role="button">Редактировать</a>
+                {% if post.author == request.user %}
+                <a class="btn btn-sm text-muted" href="{% url 'post_edit' post_id=post.id %}" role="button">Редактировать</a>
                 {% endif %}
 
             </div>

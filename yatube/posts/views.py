@@ -2,22 +2,24 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.cache import cache_page
+# from django.views.decorators.cache import cache_page
 
 from .forms import PostForm, CommentForm
 from .models import Group, Post, User
 
 
-@cache_page(60 * 20)
 def index(request):
     post_list = Post.objects.all().order_by("-pub_date")
     paginator = Paginator(post_list, settings.PAGINATOR)
     page_number = request.GET.get("page")
-    page = paginator.get_page(page_number)
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'page_obj': page_obj,
+    }
     return render(
         request,
         "index.html",
-        {"page": page}
+        context
     )
 
 
@@ -26,11 +28,13 @@ def group_posts(request, slug):
     posts = group.posts.all().order_by("-pub_date")
     paginator = Paginator(posts, settings.PAGINATOR)
     page_number = request.GET.get("page")
-    page = paginator.get_page(page_number)
+    page_obj = paginator.get_page(page_number)
+    context = {"page_obj": page_obj, "group": group}
     return render(
         request,
-        "posts/group.html",
-        {"group": group, "page": page})
+        "posts/group_list.html",
+        context
+    )
 
 
 def profile(request, username):
@@ -38,57 +42,58 @@ def profile(request, username):
     author_posts_list = author.posts.all().order_by("-pub_date")
     paginator = Paginator(author_posts_list, settings.PAGINATOR)
     page_number = request.GET.get("page")
-    page = paginator.get_page(page_number)
+    page_obj = paginator.get_page(page_number)
+    context = {"author": author, "page_obj": page_obj}
     return render(
         request,
         "profile.html",
-        {"author": author, "page": page}
+        context
     )
 
 
-def post_view(request, username, post_id):
-    post = Post.objects.get(id=post_id, author__username=username)
+def post_detail(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
     comments = post.comments.all()
     form = CommentForm()
     return render(
         request,
-        "posts/post.html",
-        {"post": post, "author": post.author,
-         "comments": comments, "form": form}
+        "posts/post_detail.html",
+        {"post": post}
     )
 
 
 @login_required
-def new_post(request):
+def post_create(request):
     form = PostForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         post = form.save(commit=False)
         post.author = request.user
         post.save()
-        return redirect("index")
+        return redirect("profile", username=request.user)
+    context = {"form": form}
     return render(
         request,
-        "posts/create_or_update_post.html",
-        {"form": form}
+        "posts/create_post.html",
+        context
     )
 
 
 @login_required
-def post_edit(request, username, post_id):
-    post = get_object_or_404(Post, author__username=username, id=post_id)
+def post_edit(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
     login_author = request.user
     if login_author != post.author:
-        return redirect("post", username, post_id)
+        return redirect("post", post_id)
     form = PostForm(request.POST or None, files=request.FILES or None,
                     instance=post)
     if request.method == "POST" and form.is_valid():
         form.save()
-        return redirect("post", username, post_id)
+        return redirect("post", post_id)
     return render(
         request,
-        "posts/create_or_update_post.html",
-        {"form": form, "post": post}
-    )
+        "posts/create_post.html",
+        {"form": form, "post": post},
+        )
 
 
 @login_required
@@ -102,7 +107,7 @@ def add_comment(request, username, post_id):
         comment.post = post
         comment.save()
         return(redirect(
-            "post", username=username, post_id=post_id))
+            "post", username=username, pk=post_id))
     return render(request,
                   "posts/comments.html",
                   {"form": form, "comments": comments, "post": post}

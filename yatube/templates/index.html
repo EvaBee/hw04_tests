@@ -5,17 +5,16 @@
 
   <div class="container">
     <!-- Вывод ленты записей -->
-    {% for post in page %}
+
       <!-- Вот он, новый include! -->
-      {% include "post_item.html" with post=post %}
-    {% endfor %}
-  </div><h4>
+
+{% for post in page_obj %}
+<h4>
     Автор:{{ post.author.username }}, Дата публикации: {{ post.pub_date|date:"d M Y" }}
 </h4>
-{% include "includes/short_pictures.html" %}
 <p>{{ post.text|linebreaksbr }}</p>
 {% if not forloop.last %}<hr>{% endif %}
-
-{% include "includes/paginator.html" with items=page paginator=paginator%}
+{% endfor %}
+{% include "includes/paginator.html" with items=page paginator=paginator %}
 {% endblock %}
 

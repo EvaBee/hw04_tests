@@ -26,8 +26,8 @@ class PostViewTests(TestCase):
         cache.clear()
         templates_pages = {
             "index.html": reverse("index"),
-            "posts/create_or_update_post.html": reverse("new_post"),
-            "posts/group.html": (
+            "posts/create_post.html": reverse("post_create"),
+            "posts/group_list.html": (
                 reverse("group_posts", kwargs={"slug": "test-slug"})
             ),
         }
@@ -50,7 +50,7 @@ class PostViewTests(TestCase):
         self.assertEqual(response.context["page"][0], self.post)
 
     def test_new_post_correct_context(self):
-        response = self.authorized_client.get(reverse("new_post"))
+        response = self.authorized_client.get(reverse("post_create"))
         form_fields = {"text": forms.fields.CharField,
                        "group": forms.fields.ChoiceField}
         for value, expected in form_fields.items():

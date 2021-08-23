@@ -27,13 +27,13 @@ class TaskCreateFormTests(TestCase):
             'text': 'Тестовый текст',
         }
 
-        self.un_auth_client.post(reverse('new_post'),
+        self.un_auth_client.post(reverse("post_create"),
                                  data=form_data,
                                  follow=True,)
         self.assertEqual(Post.objects.count(), counter)
 
         self.authorized_client.post(
-            reverse('new_post'),
+            reverse('post_create'),
             data=form_data,
             follow=True
         )
