@@ -52,13 +52,13 @@ def profile(request, username):
 
 
 def post_detail(request, post_id):
-    post = get_object_or_404(Post, pk=post_id)
+    post = get_object_or_404(Post, id=post_id)
     # comments = post.comments.all()
     # form = CommentForm()
     return render(
         request,
         "posts/post_detail.html",
-        {"post": post}
+        {"post": post, "author": post.author}
     )
 
 

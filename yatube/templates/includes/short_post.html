@@ -4,7 +4,7 @@
         <p class="card-text">
             {# Обязательно для всех ссылок используем {% url %} #}
             {# Тут делаем ссылку из name урла и передаем необходимый параметр в данном случае username #}
-            <a href="{% url 'profile' username=author.username %}"><strong class="d-block text-gray-dark">@{{ post.author.username }}</strong></a>
+            <a href="{% url 'profile' username=author.username %}"><strong class="d-block text-gray-dark">@{{ author.username }}</strong></a>
             {# Не забываем про linebreaksbr #}
             {{ post.text|linebreaksbr }}
         </p>

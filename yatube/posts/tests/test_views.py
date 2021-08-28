@@ -39,7 +39,7 @@ class PostViewTests(TestCase):
     def test_index_correct_context(self):
         cache.clear()
         responses = self.guest_client.get(reverse("index"))
-        self.assertEqual(responses.context["page"][0], self.post)
+        self.assertEqual(responses.context["page_obj"][0], self.post)
 
     def test_group_correct_context(self):
         response = self.authorized_client.get(reverse(
@@ -47,7 +47,7 @@ class PostViewTests(TestCase):
             kwargs={"slug": self.group.slug})
         )
         self.assertEqual(response.context["group"], self.group)
-        self.assertEqual(response.context["page"][0], self.post)
+        self.assertEqual(response.context["page_obj"][0], self.post)
 
     def test_new_post_correct_context(self):
         response = self.authorized_client.get(reverse("post_create"))
@@ -62,8 +62,7 @@ class PostViewTests(TestCase):
         response = self.authorized_client.get(reverse(
             "post_edit",
             kwargs={
-                "username": self.user,
-                "post_id": self.post.pk}))
+               "post_id": self.post.pk}))
         form_fields = {
             "text": forms.fields.CharField,
             "group": forms.fields.ChoiceField,
@@ -75,8 +74,7 @@ class PostViewTests(TestCase):
 
     def test_post_id_correct_context(self):
         response = self.authorized_client.get(
-            reverse("post", kwargs={"username": self.user.username,
-                                    "post_id": self.post.pk}))
+            reverse("post", kwargs={"post_id": self.post.pk}))
         self.assertEqual(response.context["user"], self.user)
         self.assertEqual(response.context["post"], self.post)
 
@@ -85,9 +83,9 @@ class PostViewTests(TestCase):
         for _ in range(13):
             Post.objects.create(text="Тестовый текст", author=self.user)
         response = self.guest_client.get(reverse("index"))
-        self.assertEqual(len(response.context.get("page").object_list), 10)
+        self.assertEqual(len(response.context.get("page_obj").object_list), 10)
         response = self.guest_client.get(reverse("index") + "?page=2")
-        self.assertEqual(len(response.context.get("page").object_list), 4)
+        self.assertEqual(len(response.context.get("page_obj").object_list), 4)
 
 
 class PaginatorViewsTest(TestCase):
@@ -109,18 +107,18 @@ class PaginatorViewsTest(TestCase):
     def test_first_page_contains_ten_records(self):
         cache.clear()
         response = self.client.get(reverse("index"))
-        self.assertEqual(len(response.context.get("page").object_list), 10)
+        self.assertEqual(len(response.context.get("page_obj").object_list), 10)
 
     def test_second_page_contains_three_records(self):
         response = self.client.get(reverse("index") + "?page=2")
-        self.assertEqual(len(response.context.get("page").object_list), 3)
+        self.assertEqual(len(response.context.get("page_obj").object_list), 3)
 
     def test_group_contains_ten_records(self):
         response = self.client.get(
             reverse("group_posts", kwargs={"slug": "test-slug2"}))
-        self.assertEqual(len(response.context.get("page").object_list), 10)
+        self.assertEqual(len(response.context.get("page_obj").object_list), 10)
 
     def test_profile_contains_ten_records(self):
         response = self.client.get(
             reverse("profile", kwargs={"username": f"{self.author}"}))
-        self.assertEqual(len(response.context.get("page").object_list), 10)
+        self.assertEqual(len(response.context.get("page_obj").object_list), 10)
