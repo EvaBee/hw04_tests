@@ -61,8 +61,7 @@ class PostViewTests(TestCase):
     def test_post_edit_correct_context(self):
         response = self.authorized_client.get(reverse(
             "post_edit",
-            kwargs={
-               "post_id": self.post.pk}))
+            kwargs={"post_id": self.post.pk}))
         form_fields = {
             "text": forms.fields.CharField,
             "group": forms.fields.ChoiceField,
