@@ -92,8 +92,7 @@ def post_edit(request, post_id):
     return render(
         request,
         "posts/create_post.html",
-        {"form": form, "post": post}
-        )
+        {"form": form, "post": post})
 
 
 @login_required

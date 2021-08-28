@@ -54,4 +54,3 @@ class TaskCreateFormTests(TestCase):
         self.assertEqual(Post.objects.count(), counter)
         self.assertEqual(self.author.username,
                          self.post.author.username)
-
