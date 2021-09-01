@@ -1,59 +1,72 @@
-from django.test import TestCase, Client
-from ..models import Group
-from django.contrib.auth import get_user_model
+from http import HTTPStatus
 
-User = get_user_model()
+from django.test import Client, TestCase
+from django.urls import reverse
+
+from ..models import Group, Post, User
 
 
 class UrlTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-
-        Group.objects.create(
-            title="test title",
-            slug="test-slug"
+        cls.author = User.objects.create_user(username='Yoname')
+        cls.group = Group.objects.create(
+            title='test group',
+            slug='slug',
+        )
+        cls.post = Post.objects.create(
+            text='Тестовая запись',
+            author=UrlTest.author,
         )
 
     def setUp(self):
         self.guest_client = Client()
-        self.user = User.objects.create_user(username="AndreyG")
+        self.user = User.objects.create_user(username="test_user")
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+        self.author = Client()
+        self.post_id = UrlTest.post.id
+        self.author_client = Client()
+        self.author_client.force_login(UrlTest.author)
 
-    def test_homepage_NON_auth(self):
-        response = self.guest_client.get("/")
-        self.assertEqual(response.status_code, 200, "err001")
+    def tests_with_no_auth(self):
+        urls = {
+            '/': HTTPStatus.OK.value,
+            '/group/slug/': HTTPStatus.OK.value,
+            '/profile/Yoname/': HTTPStatus.OK.value,
+            '/posts/1/': HTTPStatus.OK.value,
+            '/unexisting_page/': HTTPStatus.NOT_FOUND.value,
+            '/create/': HTTPStatus.FOUND.value,
+            }
+        for url, expected_value in urls.items():
+            with self.subTest(url=url):
+                response = self.guest_client.get(url)
+                self.assertEqual(response.status_code, expected_value)
 
-    def test_homepage_auth(self):
-        response = self.authorized_client.get("/")
-        self.assertEqual(response.status_code, 200, "err002")
+    def test_template_all_users(self):
+        templates_url_names = {
+            'index.html': '/',
+            'posts/group_list.html': '/group/slug/',
+            'profile.html': '/profile/Yoname/',
+            'posts/post_detail.html': f'/posts/{self.post_id}/'
+        }
+        for template, url in templates_url_names.items():
+            with self.subTest(url=url):
+                response = self.guest_client.get(url)
+                self.assertTemplateUsed(response, template)
 
-    def test_template_index(self):
-        response = self.authorized_client.get("/")
-        self.assertEqual(response.status_code, 200, "err01")
+    def test_create_auth_user(self):
+        response = self.authorized_client.get('/create/')
+        self.assertEqual(response.status_code, HTTPStatus.OK.value)
 
-    def test_group_page_auth(self):
-        response = self.authorized_client.get("/group/test-slug/")
-        self.assertEqual(response.status_code, 200, "err004")
+    def test_author_edit_post(self):
+        response = self.authorized_client.get(
+            f'/posts/{self.post.id}/edit/', follow=True
+        )
+        self.assertEqual(response.status_code, HTTPStatus.OK.value)
 
-    def test_group_page_NON_auth(self):
-        response = self.guest_client.get("/group/test-slug/")
-        self.assertEqual(response.status_code, 200, "err005")
-
-    def test_template_group(self):
-        response = self.authorized_client.get("/group/test-slug/")
-        self.assertTemplateUsed(response, "posts/group_list.html", "err06")
-
-    def test_auth_user_add_post(self):
-        response = self.authorized_client.get("/create/")
-        self.assertEqual(response.status_code, 200, "err01")
-
-    def test_template_add_post(self):
-        response = self.authorized_client.get("/create/")
-        self.assertTemplateUsed(response,
-                                "posts/create_post.html", "err02")
-
-    def test_NOT_auth_usr_add_post(self):
-        response = self.guest_client.get("/create/")
-        self.assertEqual(response.status_code, 302, "err03")
+    def test_templates_auth_user(self):
+        response = self.authorized_client.get(f'/posts/{self.post_id}/edit/')
+        self.assertRedirects(response, reverse(
+            'post', kwargs={'post_id': self.post_id}))

@@ -2,14 +2,13 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
-# from django.views.decorators.cache import cache_page
 
-from .forms import PostForm, CommentForm
+from .forms import CommentForm, PostForm
 from .models import Group, Post, User
 
 
 def index(request):
-    post_list = Post.objects.all().order_by("-pub_date")
+    post_list = Post.objects.all()
     paginator = Paginator(post_list, settings.PAGINATOR)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
@@ -25,7 +24,7 @@ def index(request):
 
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
-    posts = group.posts.all().order_by("-pub_date")
+    posts = group.posts.all()
     paginator = Paginator(posts, settings.PAGINATOR)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
@@ -39,7 +38,7 @@ def group_posts(request, slug):
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
-    author_posts_list = author.posts.all().order_by("-pub_date")
+    author_posts_list = author.posts.all()
     paginator = Paginator(author_posts_list, settings.PAGINATOR)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
@@ -53,8 +52,6 @@ def profile(request, username):
 
 def post_detail(request, post_id):
     post = get_object_or_404(Post, id=post_id)
-    # comments = post.comments.all()
-    # form = CommentForm()
     return render(
         request,
         "posts/post_detail.html",

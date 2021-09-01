@@ -5,7 +5,6 @@ User = get_user_model()
 
 
 class Post(models.Model):
-    objects = None
     text = models.TextField(blank=False, verbose_name="Текст",
                             help_text="Введите текст")
     pub_date = models.DateTimeField(auto_now_add=True,
@@ -19,11 +18,10 @@ class Post(models.Model):
                               help_text="Выберите группу")
     image = models.ImageField(upload_to="posts/media", blank=True, null=True)
 
-
-class Meta:
-    ordering = ["-pub_date"]
-    verbose_name_plural = "Записи"
-    verbose_name = "Запись"
+    class Meta:
+        ordering = ["-pub_date"]
+        verbose_name_plural = "Записи"
+        verbose_name = "Запись"
 
 
 class Group(models.Model):

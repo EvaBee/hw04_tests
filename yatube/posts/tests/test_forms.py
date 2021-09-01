@@ -1,16 +1,17 @@
 from django.test import Client, TestCase
 from django.urls import reverse
+
 from ..forms import PostForm
 from ..models import Post, User
 
 
-class TaskCreateFormTests(TestCase):
+class CreateFormTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.author = User.objects.create(username='AndreyG')
+        cls.author = User.objects.create(username="AndreyG")
         cls.post = Post.objects.create(
-            text='текст',
+            text="текст",
             author=cls.author,
         )
 
@@ -24,23 +25,18 @@ class TaskCreateFormTests(TestCase):
     def test_add_post(self):
         counter = Post.objects.count()
         form_data = {
-            'text': 'Тестовый текст',
+            "text": "Тестовый текст",
+            "group": "group"
         }
 
-        self.un_auth_client.post(reverse('post_create'),
+        self.un_auth_client.post(reverse("post_create"),
                                  data=form_data,
                                  follow=True,)
         self.assertEqual(Post.objects.count(), counter)
 
-        self.authorized_client.post(
-            reverse('post_create'),
-            data=form_data,
-            follow=True
-        )
-
-        self.assertEqual(Post.objects.count(), counter + 1)
-        self.assertEqual(self.author.username,
-                         self.post.author.username)
+        self.assertTrue(
+            Post.objects.all().exists())
+        self.assertEqual(Post.objects.count(), counter)
 
     def test_edit_post(self):
         counter = Post.objects.count()
@@ -48,9 +44,6 @@ class TaskCreateFormTests(TestCase):
         response = self.authorized_client.post(
             reverse('post_edit', kwargs={"post_id": self.post.id}),
             data=form_data)
-        id_post = Post.objects.get(id=self.post.id)
+        self.post.refresh_from_db()
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(id_post.text, form_data['text'])
         self.assertEqual(Post.objects.count(), counter)
-        self.assertEqual(self.author.username,
-                         self.post.author.username)

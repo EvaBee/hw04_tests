@@ -1,10 +1,10 @@
+from django import forms
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.test import Client, TestCase
 from django.urls import reverse
-from django import forms
-from django.core.cache import cache
 
-from ..models import Post, Group
+from ..models import Group, Post
 
 User = get_user_model()
 
@@ -28,7 +28,7 @@ class PostViewTests(TestCase):
             "index.html": reverse("index"),
             "posts/create_post.html": reverse("post_create"),
             "posts/group_list.html": (
-                reverse("group_posts", kwargs={"slug": "test-slug"})
+                reverse("group_posts", kwargs={"slug": self.group.slug})
             ),
         }
         for template, reverse_name in templates_pages.items():
