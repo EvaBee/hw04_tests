@@ -38,7 +38,7 @@ class UrlTest(TestCase):
             '/posts/1/': HTTPStatus.OK.value,
             '/unexisting_page/': HTTPStatus.NOT_FOUND.value,
             '/create/': HTTPStatus.FOUND.value,
-            }
+        }
         for url, expected_value in urls.items():
             with self.subTest(url=url):
                 response = self.guest_client.get(url)

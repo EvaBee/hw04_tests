@@ -13,4 +13,3 @@ class CreateFormTests(TestCase):
             with self.subTest(url):
                 response = self.guest_client.get(url, follow=False)
                 self.assertEqual(response.status_code, expected_status)
-
