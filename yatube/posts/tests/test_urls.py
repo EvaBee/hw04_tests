@@ -10,13 +10,14 @@ class UrlTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.author = User.objects.create_user(username='Yoname')
+        cls.author = User.objects.create_user(username="Yoname")
         cls.group = Group.objects.create(
-            title='test group',
-            slug='slug',
+            title="test_group",
+            slug="test_slug",
+            description="какое-то описание",
         )
         cls.post = Post.objects.create(
-            text='Тестовая запись',
+            text="Тестовая запись",
             author=UrlTest.author,
         )
 
@@ -32,10 +33,10 @@ class UrlTest(TestCase):
 
     def tests_with_no_auth(self):
         urls = {
-            '/': HTTPStatus.OK.value,
-            '/group/slug/': HTTPStatus.OK.value,
-            '/profile/Yoname/': HTTPStatus.OK.value,
-            '/posts/1/': HTTPStatus.OK.value,
+            "/": HTTPStatus.OK,
+            f'/group/{self.group.slug}/': HTTPStatus.OK.value,
+            f'/profile/{self.user}/': HTTPStatus.OK.value,
+            f'/posts/{self.post_id}/': HTTPStatus.OK.value,
             '/unexisting_page/': HTTPStatus.NOT_FOUND.value,
             '/create/': HTTPStatus.FOUND.value,
         }
@@ -46,10 +47,10 @@ class UrlTest(TestCase):
 
     def test_template_all_users(self):
         templates_url_names = {
-            'index.html': '/',
-            'posts/group_list.html': '/group/slug/',
-            'profile.html': '/profile/Yoname/',
-            'posts/post_detail.html': f'/posts/{self.post_id}/'
+            "index.html": "/",
+            "posts/group_list.html": f"/group/{self.group.slug}/",
+            "profile.html": f"/profile/{self.user}/",
+            "posts/post_detail.html": f"/posts/{self.post_id}/"
         }
         for template, url in templates_url_names.items():
             with self.subTest(url=url):
@@ -57,16 +58,16 @@ class UrlTest(TestCase):
                 self.assertTemplateUsed(response, template)
 
     def test_create_auth_user(self):
-        response = self.authorized_client.get('/create/')
+        response = self.authorized_client.get("/create/")
         self.assertEqual(response.status_code, HTTPStatus.OK.value)
 
     def test_author_edit_post(self):
         response = self.authorized_client.get(
-            f'/posts/{self.post.id}/edit/', follow=True
+            f"/posts/{self.post.id}/edit/", follow=True
         )
         self.assertEqual(response.status_code, HTTPStatus.OK.value)
 
     def test_templates_auth_user(self):
-        response = self.authorized_client.get(f'/posts/{self.post_id}/edit/')
+        response = self.authorized_client.get(f"/posts/{self.post_id}/edit/")
         self.assertRedirects(response, reverse(
-            'post', kwargs={'post_id': self.post_id}))
+            "post", kwargs={"post_id": self.post_id}))

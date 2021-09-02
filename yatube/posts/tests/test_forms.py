@@ -2,7 +2,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from ..forms import PostForm
-from ..models import Post, User
+from ..models import Group, Post, User
 
 
 class CreateFormTests(TestCase):
@@ -12,9 +12,10 @@ class CreateFormTests(TestCase):
         cls.author = User.objects.create(username="AndreyG")
         cls.post = Post.objects.create(
             text="текст",
-            author=cls.author,
-        )
-
+            author=cls.author)
+        cls.group = Group.objects.create(
+            title="test group",
+            slug="slug")
         cls.form = PostForm()
 
     def setUp(self):
@@ -26,7 +27,7 @@ class CreateFormTests(TestCase):
         counter = Post.objects.count()
         form_data = {
             "text": "Тестовый текст",
-            "group": "group"
+            "group": self.group.slug,
         }
 
         self.un_auth_client.post(reverse("post_create"),
@@ -40,10 +41,10 @@ class CreateFormTests(TestCase):
 
     def test_edit_post(self):
         counter = Post.objects.count()
-        form_data = {'text': 'text'}
+        form_data = {"text": "text"}
         response = self.authorized_client.post(
-            reverse('post_edit', kwargs={"post_id": self.post.id}),
+            reverse("post_edit", kwargs={"post_id": self.post.id}),
             data=form_data)
         self.post.refresh_from_db()
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(Post.objects.count(), counter)
+        self.assertEqual(Post.objects.exists(), counter)
