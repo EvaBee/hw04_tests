@@ -25,19 +25,22 @@ class CreateFormTests(TestCase):
 
     def test_add_post(self):
         form_data = {
-            "text": "тестовый текст",
-            "group": self.group.slug,
+            "text": "какой-то текст",
+            "group": self.group.pk,
         }
-        self.un_auth_client.post(reverse("post_create"),
-                                 data=form_data,
-                                 follow=True,)
+        self.authorized_client.post(reverse("post_create"),
+                                    data=form_data,
+                                    follow=True)
         self.assertTrue(
-            Post.objects.filter(text=form_data["text"]).exists())
-        self.assertEqual(self.post.text, form_data["text"])
+            Post.objects.filter(
+                text=form_data['text'],
+                group=self.group,
+            ).exists()
+        )
 
     def test_edit_post(self):
         counter = Post.objects.count()
-        form_data = {"text": "text"}
+        form_data = {"text": "Отредактированный текст"}
         self.authorized_client.post(
             reverse("post_edit", kwargs={"post_id": self.post.id}),
             data=form_data, follow=True)
