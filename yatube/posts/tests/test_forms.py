@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from django.test import Client, TestCase
 from django.urls import reverse
 
@@ -11,7 +13,7 @@ class CreateFormTests(TestCase):
         super().setUpClass()
         cls.author = User.objects.create(username="AndreyG")
         cls.post = Post.objects.create(
-            text="текст",
+            text="тестовый текст",
             author=cls.author)
         cls.group = Group.objects.create(
             title="test group",
@@ -24,27 +26,28 @@ class CreateFormTests(TestCase):
         self.authorized_client.force_login(self.author)
 
     def test_add_post(self):
-        counter = Post.objects.count()
         form_data = {
-            "text": "Тестовый текст",
+            "text": "тестовый текст",
             "group": self.group.slug,
         }
-
         self.un_auth_client.post(reverse("post_create"),
                                  data=form_data,
                                  follow=True,)
-        self.assertEqual(Post.objects.count(), counter)
-
         self.assertTrue(
-            Post.objects.all().exists())
-        self.assertEqual(Post.objects.count(), counter)
+            Post.objects.filter(text=form_data["text"]).exists())
+        self.assertEqual(self.post.text, form_data["text"])
 
     def test_edit_post(self):
         counter = Post.objects.count()
         form_data = {"text": "text"}
         response = self.authorized_client.post(
             reverse("post_edit", kwargs={"post_id": self.post.id}),
-            data=form_data)
-        self.post.refresh_from_db()
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(Post.objects.exists(), counter)
+            data=form_data, follow=True)
+        self.assertEqual(Post.objects.count(), counter)
+        post = Post.objects.first()
+        self.assertTrue(post.text, form_data["text"])
+        self.assertTrue(
+            Post.objects.filter(
+                text=form_data["text"],
+            ).exists()
+        )
