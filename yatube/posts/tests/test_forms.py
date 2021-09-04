@@ -1,5 +1,3 @@
-from http import HTTPStatus
-
 from django.test import Client, TestCase
 from django.urls import reverse
 
@@ -40,7 +38,7 @@ class CreateFormTests(TestCase):
     def test_edit_post(self):
         counter = Post.objects.count()
         form_data = {"text": "text"}
-        response = self.authorized_client.post(
+        self.authorized_client.post(
             reverse("post_edit", kwargs={"post_id": self.post.id}),
             data=form_data, follow=True)
         self.assertEqual(Post.objects.count(), counter)
